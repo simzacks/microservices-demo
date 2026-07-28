@@ -19,6 +19,12 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.respository_owner }}/refresher
+  RUNNER_TOOL_CACHE: '/tmp/github-runner-tools'
+  DOTNET_INSTALL_DIR: '/tmp/dotnet'
+  PIP_CACHE_DIR: '/tmp/pip-cache'
+  npm_config_cache: '/tmp/npm-cache'
+  GOCACHE: '/tmp/go-cache'
+  GOMODCACHE: '/tmp/go-mod-cache'
 
 jobs:
   changes:
@@ -107,6 +113,7 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Test C# Cart Service
+        if: matrix.service == 'cartservice'
         run: dotnet test src/cartservice
 
 # --- Node.js Services ---
