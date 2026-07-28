@@ -135,6 +135,8 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: '3.14'
+          # 3.14 stable isn't available for fedora, but that is the version the services are built for.
+          allow-prereleases: true
 
       - name: Test Python Microservices
         if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
