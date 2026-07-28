@@ -130,21 +130,23 @@ jobs:
           npm ci
           npm test --if-present
 
-      - name: Setup Python
+      - name: Setup and test Python
         if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
-        uses: actions/setup-python@v7
+#        uses: actions/setup-python@v7
+#        with:
+#          python-version: '3.14-dev'
+        # 3.14 stable isn't available for fedora, but that is the version the services are built for.
+        uses: docker://python:3.14-slim
         with:
-          python-version: '3.14'
-          # 3.14 stable isn't available for fedora, but that is the version the services are built for.
-          allow-prereleases: true
-
-      - name: Test Python Microservices
-        if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
-        run: |
-          pip install pytest
-          cd src/${{ matrix.service }}
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pytest || true        
+          entrypoint: /bin/sh
+          args: -c "pip install pytest && cd src/${{ matrix.service }} && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi && pytest || true"
+#      - name: Test Python Microservices
+#        if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
+#        run: |
+#          pip install pytest
+#          cd src/${{ matrix.service }}
+#          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+#         pytest || true        
 
   build-and-push:
     name: Build and Push
