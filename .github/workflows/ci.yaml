@@ -18,7 +18,7 @@ on:
     - 'protos/**'
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.respository_owner }}/refresher
+  IMAGE_PREFIX: ${{ github.repository_owner }}/refresher
   RUNNER_TOOL_CACHE: '/tmp/github-runner-tools'
   DOTNET_INSTALL_DIR: '/tmp/dotnet'
   PIP_CACHE_DIR: '/tmp/pip-cache'
