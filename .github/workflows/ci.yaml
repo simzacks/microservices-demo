@@ -1,0 +1,187 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: CI - Build & Publish
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+    paths:
+      - 'src/**'
+      - 'protos/**'
+      - '.github/workflows/ci.yaml'
+  pull_request:
+    branches:
+      - main
+    paths:
+    - 'src/**'
+    - 'protos/**'
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.respository_owner }}/refresher
+
+jobs:
+  changes:
+    name: Detect Changed Services
+    runs-on: local-workstation
+    outputs:
+      matrix: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Check path changes
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            adservice:
+              - 'src/adservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            cartservice:
+              - 'src/cartservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            checkoutservice:
+              - 'src/checkoutservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            currencyservice:
+              - 'src/currencyservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            emailservice:
+              - 'src/emailservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            frontend:
+              - 'src/frontend/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            loadgenerator:
+              - 'src/loadgenerator/**'
+              - '.github/workflows/ci.yaml'
+            paymentservice:
+              - 'src/paymentservice/**'
+              - '.github/workflows/ci.yaml'
+            productcatalogservice:
+              - 'src/productcatalogservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            recommendationservice:
+              - 'src/recommendationservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+            shippingservice:
+              - 'src/shippingservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
+
+  test:
+    name: Run Unit Tests
+    needs: changes
+    if: ${{ needs.changes.outputs.matrix != '[]' && needs.changes.outputs.matrix != '' }}
+    runs-on: local-workstation
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.matrix) }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup go
+        if: contains(fromJSON('["shippingservice", "productcatalogservice", "checkoutservice", "frontend"]'), matrix.service)
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.5'
+      - name: Test Go Microservices
+        if: contains(fromJSON('["shippingservice", "productcatalogservice", "checkoutservice", "frontend"]'), matrix.service)
+        run: |
+          cd src/${{ matrix.service }}
+          go test ./...
+      - name: Setup .NET
+        if: matrix.service == 'cartservice'
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test C# Cart Service
+        run: dotnet test src/cartservice
+
+# --- Node.js Services ---
+      - name: Setup Node.js
+        if: contains(fromJSON('["currencyservice", "paymentservice"]'), matrix.service)      
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Test Node.js Microservices
+        if: contains(fromJSON('["currencyservice", "paymentservice"]'), matrix.service)
+        run: |
+          cd src/${{ matrix.service }}
+          npm ci
+          npm test --if-present
+
+      - name: Setup Python
+        if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      - name: Test Python Microservices
+        if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
+        run: |
+          pip install pytest
+          cd src/${{ matrix.service }}
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pytest || true        
+
+  build-and-push:
+    name: Build and Push
+    needs: [changes, test]
+    if: ${{ needs.changes.outputs.matrix != '[]' && needs.changes.outputs.matrix != '' }}
+    runs-on: local-workstation
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Set up QEMU (Multi-Arch support)
+        uses: docker/setup-qemu-action@4
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login Github container registry
+        if: github.event_name ~= 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract Docker Metadata (Tags & Labels)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,prefix=,format=short
+            type=ref,event=branch
+            type=semver,pattern={{ version }}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./src/${{ matrix.service }}
+          file: ./src/${{ matrix.service }}/Dockerfile
+          platforms: linux/amd64, linux/arm64
+          push: ${{ github.event_name |= 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
