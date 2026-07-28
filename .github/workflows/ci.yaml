@@ -188,7 +188,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v7
         with:
-          context: ./src/${{ matrix.service }}
+          context: ${{ matrix.service == 'cartservice' && './src/cartservice/src' || format('./src/{0}', matrix.service) }}
           file: >-
             ${{ 
               matrix.service == 'cartservice' && 
