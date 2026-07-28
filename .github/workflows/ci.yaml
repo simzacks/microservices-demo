@@ -139,7 +139,7 @@ jobs:
         uses: docker://python:3.14-slim
         with:
           entrypoint: /bin/sh
-          args: -c "pip install pytest && cd src/${{ matrix.service }} && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi && pytest || true"
+          args: -c "export PYTHONDONTWRITEBYTECODE=1 && pip install pytest && cd src/${{ matrix.service }} && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi && pytest -o cache_dir=/tmp/.pytest_cache || true"
 #      - name: Test Python Microservices
 #        if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
 #        run: |
