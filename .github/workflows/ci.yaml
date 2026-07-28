@@ -189,7 +189,12 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ./src/${{ matrix.service }}
-          file: ./src/${{ matrix.service }}/Dockerfile
+          file: >-
+            ${{ 
+              matrix.service == 'cartservice' && 
+              './src/cartservice/src/Dockerfile' || 
+              format('./src/{0}/Dockerfile', matrix.service) 
+            }}
           platforms: linux/amd64, linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
