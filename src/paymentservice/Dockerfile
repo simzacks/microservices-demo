@@ -26,6 +26,9 @@ RUN apk add --update --no-cache \
 
 WORKDIR /usr/src/app
 
+# Install native build dependencies required by pprof / node-gyp on Alpine
+RUN apk add --no-policy --no-cache python3 make g++
+
 COPY package*.json ./
 
 # RUN npm install --only=production
