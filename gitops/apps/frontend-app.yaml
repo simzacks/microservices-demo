@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/simzacks/microservices-demo.git'
     targetRevision: main
-    path: workloads/frontend
+    path: gitops/workloads/frontend
   destination:
     server: 'https://kuberness.default.svc'
     namespace: default
