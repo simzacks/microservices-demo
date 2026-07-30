@@ -10,7 +10,7 @@ spec:
     targetRevision: main
     path: gitops/workloads/frontend
   destination:
-    server: 'https://kuberness.default.svc'
+    server: 'https://default.svc'
     namespace: default
   syncPolicy:
     automated:
