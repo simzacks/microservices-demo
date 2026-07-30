@@ -22,4 +22,4 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      aelfHeal: true
+      selfHeal: true
