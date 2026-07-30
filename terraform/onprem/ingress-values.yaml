@@ -1,0 +1,17 @@
+controller:
+  replicaCount: 1
+  deploymentStrategy:
+    type: Recreate
+  hostNetwork: true
+  hostPort:
+    enabled: true
+  publishService:
+    enabled: false
+  nodeSelector:
+    ingress-ready: "true"
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+  service:
+    type: LoadBalancer
