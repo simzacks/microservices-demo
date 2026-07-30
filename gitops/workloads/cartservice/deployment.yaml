@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: shcr.io/simzacks/cartservice:latest
+        image: ghcr.io/simzacks/cartservice:latest
         ports:
         - containerPort: 7070
         env:
