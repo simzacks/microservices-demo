@@ -4,6 +4,7 @@ metadata:
   name: frontend-ingress
   namespace: default
 spec:
+  ingressClassName: nginx
   rules:
   - host: frontend.local
     http:
