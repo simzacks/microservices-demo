@@ -83,6 +83,10 @@ jobs:
               - 'src/shippingservice/**'
               - 'protos/**'
               - '.github/workflows/ci.yaml'
+            shoppingassistantservice:
+              - 'src/shoppingassistantservice/**'
+              - 'protos/**'
+              - '.github/workflows/ci.yaml'
 
   test:
     name: Run Unit Tests
@@ -131,7 +135,7 @@ jobs:
           npm test --if-present
 
       - name: Setup and test Python
-        if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator"]'), matrix.service)
+        if: contains(fromJSON('["emailservice", "recommendationservice", "loadgenerator", "shoppingassistantservice"]'), matrix.service)
 #        uses: actions/setup-python@v7
 #        with:
 #          python-version: '3.14-dev'
