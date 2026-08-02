@@ -6,21 +6,21 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shippingservice
+  name: adservice
   namespace: default
   labels:
-    app: shippingservice
+    app: adservice
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: shippingservice
+      app: adservice
   template:
     metadata:
       labels:
-        app: shippingservice
+        app: adservice
     spec:
-      serviceAccountName: shippingservice
+      serviceAccountName: adservice
       terminationGracePeriodSeconds: 5
       securityContext:
         fsGroup: 1000
@@ -36,12 +36,12 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: ghcr.io/simzacks/refresher/shippingservice:latest
+        image: ghcr.io/simzacks/refresher/adservice:latest
         ports:
-          - containerPort: 50051
+          - containerPort: 9555
         env:
           - name: PORT
-            value: "50051"
+            value: "9555"
         resources:
           requests:
             cpu: 100m
@@ -52,9 +52,9 @@ spec:
         readinessProbe:
           initialDelaySeconds: 5
           grpc:
-            port: 50051
+            port: 9555
         livenessProbe:
           initialDelaySeconds: 5
           grpc:
-            port: 50051
+            port: 9555
           
