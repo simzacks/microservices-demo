@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: gcr.io/simzacks/refresher/productcatalogservice:latest
+        image: ghcr.io/simzacks/refresher/productcatalogservice:latest
         ports:
           - containerPort: 3550
         env:
