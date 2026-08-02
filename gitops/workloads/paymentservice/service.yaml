@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: paymentservice
+  namespace: default
+  labels:
+    app: paymentservice
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+  selector:
+    app: paymentservice
