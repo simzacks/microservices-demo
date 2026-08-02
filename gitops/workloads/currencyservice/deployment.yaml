@@ -36,24 +36,24 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-          image: ghcr.io/simzacks/refresher/currencyservice:latest
-          ports:
-            - containerPort: 7000
-          env:
-            - name: PORT
-              value: "7000"
-          resources:
-            requests:
-              cpu: 100m
-              memory: 64Mi
-            limits:
-              cpu: 200m
-              memory: 128Mi
-          readinessProbe:
-            initialDelaySeconds: 5
-            grpc:
-              port: 7000
-          livenessProbe:
-            initialDelaySeconds: 5
-            grpc:
-              port: 7000
+        image: ghcr.io/simzacks/refresher/currencyservice:latest
+        ports:
+          - containerPort: 7000
+        env:
+          - name: PORT
+            value: "7000"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        readinessProbe:
+          initialDelaySeconds: 5
+          grpc:
+            port: 7000
+        livenessProbe:
+          initialDelaySeconds: 5
+          grpc:
+            port: 7000
