@@ -87,6 +87,10 @@ jobs:
               - 'src/shoppingassistantservice/**'
               - 'protos/**'
               - '.github/workflows/ci.yaml'
+            db_initializer:
+              - 'src/db_initializer/**'
+              - '.github/workflows/ci.yaml'
+
 
   test:
     name: Run Unit Tests
