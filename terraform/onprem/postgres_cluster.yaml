@@ -1,0 +1,15 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-ha
+  namespace: infra
+spec:
+  instances: 3
+  storage:
+    size: 10Gi
+    storageClass: standard
+  failoverDelay: 10
+  bootstrap:
+    initdb:
+      database: appdb
+      owner: appuser

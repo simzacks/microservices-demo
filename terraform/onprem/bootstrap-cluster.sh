@@ -92,6 +92,10 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace -f ingress-values.yaml
 
+
+kubectl apply --server-side -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.30/releases/cnpg-1.30.0.yaml
+kubectl apply -f terraform/onprem/postgres_cluster.yaml
+
 echo "🚀 Cluster bootstrap 100% complete!"
 echo "--------------------------------------------------"
 echo "Next steps: Run your local port-forward command for port 8080"

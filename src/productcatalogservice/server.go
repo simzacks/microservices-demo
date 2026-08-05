@@ -39,6 +39,10 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc"
+
+    "database/sql"
+	_ "github.com/lib/pq"
+
 )
 
 var (
@@ -50,6 +54,16 @@ var (
 
 	reloadCatalog bool
 )
+
+type productCatalog struct {
+    db *sql.DB
+    pb.UnimplementedProductCatalogServiceServer
+}
+
+// Instantiate this inside your main() initialization phase 
+func NewProductCatalogServer(db *sql.DB) *productCatalog {
+    return &productCatalog{db: db}
+}
 
 func init() {
 	log = logrus.New()
@@ -82,6 +96,25 @@ func main() {
 		log.Info("Profiling disabled.")
 	}
 
+// Start New PG Code
+    dbURL := os.Getenv("DATABASE_URL")
+    if dbURL == "" {
+        log.Fatal("DATABASE_URL environment variable must be specified")
+    }
+
+    db, err := sql.Open("postgres", dbURL)
+    if err != nil {
+        log.Fatalf("Failed to establish database driver framework: %v", err)
+    }
+    defer db.Close()
+
+    // Validate database connection is actively live before starting gRPC listener
+    if err := db.Ping(); err != nil {
+        log.Fatalf("Failed to successfully ping target PostgreSQL instance: %v", err)
+    }
+    log.Println("Successfully connected to the PostgreSQL database cluster.")
+
+// END New PG Code
 	flag.Parse()
 
 	// set injected latency
@@ -134,11 +167,15 @@ func run(port string) string {
 	srv = grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()))
 
+/* Removing code to read from product.json
 	svc := &productCatalog{}
 	err = loadCatalog(&svc.catalog)
 	if err != nil {
 		log.Fatalf("could not parse product catalog: %v", err)
 	}
+*/
+// new PG code
+    svc = NewProductCatalogServer(db)
 
 	pb.RegisterProductCatalogServiceServer(srv, svc)
 	healthcheck := health.NewServer()

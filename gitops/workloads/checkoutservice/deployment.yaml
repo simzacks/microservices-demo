@@ -54,6 +54,35 @@ spec:
           value: "currencyservice:7000"
         - name: CART_SERVICE_ADDR
           value: "cartservice:7070"
+          # pg vars starts here
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ha-app
+              key: user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ha-app
+              key: password
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ha-app
+              key: host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ha-app
+              key: port
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-ha-app
+              key: dbname
+        # Construct composite URL string for Go drivers natively
+        - name: DATABASE_URL
+          value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"          
         resources:
           requests:
             cpu: 100m
