@@ -17,7 +17,6 @@ package main
 import (
 	"context"
 	"strings"
-	"time"
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto"
 	"google.golang.org/grpc/codes"
@@ -126,7 +125,8 @@ func (s *productCatalog) ListProducts(ctx context.Context, req *pb.Empty) (*pb.L
 }
 
 func (s *productCatalog) GetProduct(ctx context.Context, req *pb.GetProductRequest) (*pb.Product, error) {
-    if s.db != nil {
+    p := &pb.Product{PriceUsd: &pb.Money{CurrencyCode: "USD"}}
+	if s.db != nil {
 		p := &pb.Product{PriceUsd: &pb.Money{CurrencyCode: "USD"}}
 		var categories []string
 
