@@ -13,3 +13,6 @@ spec:
     initdb:
       database: appdb
       owner: appuser
+      secret:
+        name: postgres-ha-app
+  

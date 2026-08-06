@@ -92,9 +92,21 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace -f ingress-values.yaml
 
+# Install kubernetes reflector for secret sharing
+helm repo add emberstack https://emberstack.github.io/helm-charts
+helm repo update
+helm upgrade --install reflector emberstack/reflector
 
+
+# install pg operator and cluster
 kubectl apply --server-side -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.30/releases/cnpg-1.30.0.yaml
 kubectl apply -f terraform/onprem/postgres_cluster.yaml
+
+kubectl annotate secret -n infra postgres-ha-app reflector.v1.k8s.emberstack.com/reflection-allowed="true"
+kubectl annotate secret -n infra postgres-ha-app reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces="default"
+
+kubectl apply -f terraform/onprem/postgres_secret_sharing.yaml
+
 
 echo "🚀 Cluster bootstrap 100% complete!"
 echo "--------------------------------------------------"

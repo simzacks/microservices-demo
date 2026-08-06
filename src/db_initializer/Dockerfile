@@ -6,5 +6,6 @@ RUN apt-get update && apt-gewt install -y --no-install-recommends gcc libpq-dev 
 RUN pip install --no-cache-dir psycopg2-binary
 
 COPY seed_products.py .
-COPY ../productcatalogservice/products.json .
+# copy this file from the productcatalogservice dir, docker can't copy from an dir outside of its context.
+COPY products.json .
 CMD ["python", "seed_products.py"]
