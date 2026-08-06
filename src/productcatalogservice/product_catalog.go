@@ -107,7 +107,7 @@ func (s *productCatalog) ListProducts(ctx context.Context, req *pb.Empty) (*pb.L
 		p := &pb.Product{PriceUsd: &pb.Money{}}
 		var categories []string
 
-		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Picture, &p.PriceUsd.CurrencyCode, &p.PriceUsd.Nanos, pq.Array(&categories))
+		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Picture, &p.PriceUsd.Units, &p.PriceUsd.Nanos, pq.Array(&categories))
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to scan product row: %v", err)
 		}
