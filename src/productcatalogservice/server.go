@@ -55,15 +55,6 @@ var (
 	reloadCatalog bool
 )
 
-type productCatalog struct {
-    db *sql.DB
-    pb.UnimplementedProductCatalogServiceServer
-}
-
-// Instantiate this inside your main() initialization phase 
-func NewProductCatalogServer(db *sql.DB) *productCatalog {
-    return &productCatalog{db: db}
-}
 
 func init() {
 	log = logrus.New()
@@ -149,11 +140,11 @@ func main() {
 		port = os.Getenv("PORT")
 	}
 	log.Infof("starting grpc server at :%s", port)
-	run(port)
+	run(port, db)
 	select {}
 }
 
-func run(port string) string {
+func run(port string, db *sql.DB) string {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatal(err)
@@ -167,15 +158,15 @@ func run(port string) string {
 	srv = grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()))
 
-/* Removing code to read from product.json
+// keeping this for test
 	svc := &productCatalog{}
 	err = loadCatalog(&svc.catalog)
 	if err != nil {
 		log.Fatalf("could not parse product catalog: %v", err)
 	}
-*/
+
 // new PG code
-    svc = NewProductCatalogServer(db)
+    svc := NewProductCatalogServer(db)
 
 	pb.RegisterProductCatalogServiceServer(srv, svc)
 	healthcheck := health.NewServer()
