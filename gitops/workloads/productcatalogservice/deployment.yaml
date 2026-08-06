@@ -45,7 +45,7 @@ spec:
           - name: DATABASE_URL
             valueFrom:
               secretKeyRef:
-                  name: pg-ha-app
+                  name: postgres-ha-app
                   key: fqdn-uri
         resources:
           requests:
