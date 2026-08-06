@@ -16,7 +16,6 @@ package main
 
 import (
 	"context"
-	"strings"
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto"
 	"google.golang.org/grpc/codes"

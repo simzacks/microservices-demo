@@ -158,12 +158,6 @@ func run(port string, db *sql.DB) string {
 	srv = grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()))
 
-// keeping this for test
-	svc := &productCatalog{}
-	err = loadCatalog(&svc.catalog)
-	if err != nil {
-		log.Fatalf("could not parse product catalog: %v", err)
-	}
 
 // new PG code
     svc := NewProductCatalogServer(db)
