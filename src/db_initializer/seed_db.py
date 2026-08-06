@@ -85,7 +85,7 @@ def execute_ddl_and_seed():
             for p in products:
                 cursor.execute(
                     insert_query,
-                    (p["id"], p["name"], p["description"], p["picture"], int(p["priceUsd"]["units"]), p["priceUsd"]["priceNanos"], p["categories"])
+                    (p["id"], p["name"], p["description"], p["picture"], int(p["priceUsd"]["units"]), p["priceUsd"]["nanos"], p["categories"])
                 )
         
         conn.commit()
