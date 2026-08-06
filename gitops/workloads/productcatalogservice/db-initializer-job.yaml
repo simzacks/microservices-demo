@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-initializer
+  namespace: default
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation, HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: db-initializer
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16-alpine
+          command: ['sh', '-c', 'until pg_isready -h ${DB_HOST}.infra.svc.cluster.local -p ${DB_PORT} -U ${DB_USER}; do echo waiting for database; sleep 2; done;']
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ha-app
+                  key: user
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ha-app
+                  key: password
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ha-app
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ha-app
+                  key: port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-ha-app
+                  key: dbname
+            # Construct composite URL string for Go drivers natively
+            - name: DATABASE_URL
+              value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"          
+      containers:
+        - name: db-initializer
+          image: ghcr.io/simzacks/refresher/db_initializer:latest
+          imagePullPolicy: Always
+          env:
+              - name: DB_FQDN
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-ha-app
+                    key: fqdn-uri

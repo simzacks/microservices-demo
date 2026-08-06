@@ -12,14 +12,10 @@ def execute_ddl_and_seed():
         connection_target = db_url
     else:
         print("Assembling connection parameters from environment values...")
-        host = os.getenv("DB_HOST", "localhost")
-        user = os.getenv("DB_USER", "postgres")
-        password = os.getenv("DB_PASSWORD", "password")
-        dbname = os.getenv("DB_NAME", "boutique")
-        port = os.getenv("DB_PORT", "5432")
+        fqdn = os.getenv("DB_FQDN", "BROKEN")
         
         # Build standard connection dictionary parameters
-        connection_target = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+        connection_target = f"{fqdn}"
 
     json_path = "products.json"
     if not os.path.exists(json_path):
