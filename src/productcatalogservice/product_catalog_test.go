@@ -16,59 +16,26 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto"
 	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"github.com/DATA-DOG/go-sqlmock"
 )
-
-// Mock struct for sql.DB to allow testing
-type mockDB struct {
-	mockQuery func(context.Context, string, ...interface{}) (*sql.Rows, error)
-}
-
-func (m *mockDB) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	return m.mockQuery(ctx, query, args...)
-}
-
-// Mock struct for sql.Rows to allow testing
-type mockRows struct {
-	mockNext func() bool
-	mockScan func(...interface{}) error
-}
-
-func (m *mockRows) Next() bool {
-	return m.mockNext()
-}
-
-func (m *mockRows) Scan(dest ...interface{}) error {
-	return m.mockScan(dest...)
-}
 
 func TestListProducts(t *testing.T) {
 	ctx := context.Background()
-	db := &mockDB{
-		mockQuery: func(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-			rows := &mockRows{
-				mockNext: func() bool { return true },
-				mockScan: func(dest ...interface{}) error {
-					id := "1"
-					name := "Product 1"
-					description := "Description of Product 1"
-					picture := ""
-					priceUsd := int64(100)
-					priceNanos := int32(0)
-					categories := pq.StringArray{"Category A", "Category B"}
-					return rows.Scan(&id, &name, &description, &picture, &priceUsd, &priceNanos, categories)
-				},
-			}
-			return rows, nil
-		},
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+	defer db.Close()
 
+	mock.ExpectQuery("SELECT id, name, description, picture, price_usd, price_nanos, categories FROM products").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "picture", "price_usd", "price_nanos", "categories"}).
+			AddRow("1", "Product 1", "Description of Product 1", "", 100, 0, pq.StringArray{"Category A", "Category B"}))
 	catalog := NewProductCatalogServer(db)
 	response, err := catalog.ListProducts(ctx, &pb.Empty{})
 	if err != nil {
@@ -96,23 +63,16 @@ func TestListProducts(t *testing.T) {
 
 func TestGetProduct(t *testing.T) {
 	ctx := context.Background()
-	db := &mockDB{
-		mockQueryRow: func(ctx context.Context, query string, args ...interface{}) *sql.Row {
-			row := &mockRow{
-				mockScan: func(dest ...interface{}) error {
-					id := "1"
-					name := "Product 1"
-					description := "Description of Product 1"
-					picture := ""
-					priceUsd := int64(100)
-					priceNanos := int32(0)
-					categories := pq.StringArray{"Category A", "Category B"}
-					return row.Scan(&id, &name, &description, &picture, &priceUsd, &priceNanos, categories)
-				},
-			}
-			return row
-		},
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+	defer db.Close()
+
+	mock.ExpectQuery("SELECT id, name, description, picture, price_usd, price_nanos, categories FROM products WHERE id = $1").
+		WithArgs("1").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "picture", "price_usd", "price_nanos", "categories"}).
+			AddRow("1", "Product 1", "Description of Product 1", "", 100, 0, pq.StringArray{"Category A", "Category B"}))
 
 	catalog := NewProductCatalogServer(db)
 	response, err := catalog.GetProduct(ctx, &pb.GetProductRequest{Id: "1"})
@@ -136,24 +96,16 @@ func TestGetProduct(t *testing.T) {
 
 func TestSearchProducts(t *testing.T) {
 	ctx := context.Background()
-	db := &mockDB{
-		mockQuery: func(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-			rows := &mockRows{
-				mockNext: func() bool { return true },
-				mockScan: func(dest ...interface{}) error {
-					id := "1"
-					name := "Product 1"
-					description := "Description of Product 1"
-					picture := ""
-					priceUsd := int64(100)
-					priceNanos := int32(0)
-					categories := pq.StringArray{"Category A", "Category B"}
-					return rows.Scan(&id, &name, &description, &picture, &priceUsd, &priceNanos, categories)
-				},
-			}
-			return rows, nil
-		},
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+	defer db.Close()
+
+	mock.ExpectQuery("SELECT id, name, description, picture, price_usd, price_nanos, categories FROM products WHERE name ILIKE $1 OR description ILIKE $1").
+		WithArgs("%Product%").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "picture", "price_usd", "price_nanos", "categories"}).
+			AddRow("1", "Product 1", "Description of Product 1", "", 100, 0, pq.StringArray{"Category A", "Category B"}))
 
 	catalog := NewProductCatalogServer(db)
 	response, err := catalog.SearchProducts(ctx, &pb.SearchProductsRequest{Query: "Product"})
