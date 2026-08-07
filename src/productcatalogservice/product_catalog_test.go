@@ -19,14 +19,14 @@ import (
 	"testing"
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto"
-	"github.com/lib/pq"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/lib/pq"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestListProducts(t *testing.T) {
 	ctx := context.Background()
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
@@ -49,8 +49,8 @@ func TestListProducts(t *testing.T) {
 		Description: "Description of Product 1",
 		Picture:     "",
 
-		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
-		Categories:  []string{"Category A", "Category B"},
+		PriceUsd:   &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
+		Categories: []string{"Category A", "Category B"},
 	}
 	if len(response.Products) != 1 {
 		t.Errorf("ListProducts() returned %v products, want 1", len(response.Products))
@@ -64,7 +64,7 @@ func TestListProducts(t *testing.T) {
 
 func TestGetProduct(t *testing.T) {
 	ctx := context.Background()
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
@@ -88,8 +88,8 @@ func TestGetProduct(t *testing.T) {
 		Description: "Description of Product 1",
 		Picture:     "",
 
-		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
-		Categories:  []string{"Category A", "Category B"},
+		PriceUsd:   &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
+		Categories: []string{"Category A", "Category B"},
 	}
 	if !proto.Equal(expectedProduct, response) {
 		t.Errorf("GetProduct() = %v, want %v", response, expectedProduct)
@@ -98,13 +98,16 @@ func TestGetProduct(t *testing.T) {
 
 func TestSearchProducts(t *testing.T) {
 	ctx := context.Background()
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
 
-	mock.ExpectQuery("SELECT id, name, description, picture, price_usd, price_nanos, categories FROM products WHERE name ILIKE $1 OR description ILIKE $1").
+	mock.ExpectQuery(`
+		SELECT id, name, description, picture, price_usd, price_nanos, categories 
+		FROM products 
+		WHERE name ILIKE $1 OR description ILIKE $1`).
 		WithArgs("%Product%").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "picture", "price_usd", "price_nanos", "categories"}).
 			AddRow("1", "Product 1", "Description of Product 1", "", 100, 0, pq.StringArray{"Category A", "Category B"}))
@@ -122,8 +125,8 @@ func TestSearchProducts(t *testing.T) {
 		Description: "Description of Product 1",
 		Picture:     "",
 
-		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
-		Categories:  []string{"Category A", "Category B"},
+		PriceUsd:   &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
+		Categories: []string{"Category A", "Category B"},
 	}
 	if len(response.Results) != 1 {
 		t.Errorf("SearchProducts() returned %v products, want 1", len(response.Results))
