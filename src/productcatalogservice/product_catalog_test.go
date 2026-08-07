@@ -21,6 +21,7 @@ import (
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto"
 	"github.com/lib/pq"
 	"github.com/DATA-DOG/go-sqlmock"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestListProducts(t *testing.T) {
