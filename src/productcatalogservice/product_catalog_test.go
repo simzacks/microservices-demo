@@ -48,7 +48,8 @@ func TestListProducts(t *testing.T) {
 		Name:        "Product 1",
 		Description: "Description of Product 1",
 		Picture:     "",
-		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 1, Nanos: 0},
+
+		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
 		Categories:  []string{"Category A", "Category B"},
 	}
 	if len(response.Products) != 1 {
@@ -86,7 +87,8 @@ func TestGetProduct(t *testing.T) {
 		Name:        "Product 1",
 		Description: "Description of Product 1",
 		Picture:     "",
-		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 1, Nanos: 0},
+
+		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
 		Categories:  []string{"Category A", "Category B"},
 	}
 	if !proto.Equal(expectedProduct, response) {
@@ -119,7 +121,8 @@ func TestSearchProducts(t *testing.T) {
 		Name:        "Product 1",
 		Description: "Description of Product 1",
 		Picture:     "",
-		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 1, Nanos: 0},
+
+		PriceUsd:    &pb.Money{CurrencyCode: "USD", Units: 100, Nanos: 0},
 		Categories:  []string{"Category A", "Category B"},
 	}
 	if len(response.Results) != 1 {
