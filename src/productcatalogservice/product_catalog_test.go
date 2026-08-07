@@ -20,8 +20,6 @@ import (
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/productcatalogservice/genproto"
 	"github.com/lib/pq"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
@@ -36,6 +34,7 @@ func TestListProducts(t *testing.T) {
 	mock.ExpectQuery("SELECT id, name, description, picture, price_usd, price_nanos, categories FROM products").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "picture", "price_usd", "price_nanos", "categories"}).
 			AddRow("1", "Product 1", "Description of Product 1", "", 100, 0, pq.StringArray{"Category A", "Category B"}))
+
 	catalog := NewProductCatalogServer(db)
 	response, err := catalog.ListProducts(ctx, &pb.Empty{})
 	if err != nil {
