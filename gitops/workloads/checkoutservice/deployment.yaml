@@ -55,13 +55,11 @@ spec:
         - name: CART_SERVICE_ADDR
           value: "cartservice:7070"
           # pg vars starts here
-        - name: DB_FQDN
+        - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: postgres-ha-app
-              key: fqdn-uri
-        - name: DATABASE_URL
-          value: "$(DB_FQDN)?sslmode=disable"          
+                name: postgres-ha-app
+                key: fqdn-uri
         resources:
           requests:
             cpu: 100m
